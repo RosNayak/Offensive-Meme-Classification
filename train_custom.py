@@ -1,34 +1,15 @@
 from tqdm.auto import tqdm
 import functools
+from utility import *
+from driving_functions import *
 
 EPOCHS = 10
 device = select_device()
 
-def get_dataset(df, sequences, images, state='training'):
-    ids = list(df['image_name'])
-    image_paths = [os.path.join(images, idx) for idx in ids]
-    target = df['label'].values
+train = pd.read_csv("Dataset/Training_meme_dataset.csv")
+val = pd.read_csv("Dataset/Validation_meme_dataset.csv")
 
-    if state == 'training':
-        transform = train_transform_object(224)
-    elif state == 'validation' or state == 'testing':
-        transform = valid_transform_object(224)
-    else:
-        transform = None
-
-    return MemeTrainSet(image_paths, sequences, target, transform)
-
-def collate_fn(batch, pad_index):
-  images = torch.stack([ex[0] for ex in batch])
-  labels = torch.stack([ex[2] for ex in batch])
-  captions = [torch.tensor(ex[1]) for ex in batch]
-  captions = nn.utils.rnn.pad_sequence(captions, padding_value=pad_index, batch_first=True)
-  return images, captions, labels
-
-train = pd.read_csv("/content/drive/MyDrive/Image Processing project/Meme Classification/Dataset/Split Dataset/Training_meme_dataset.csv")
-val = pd.read_csv("/content/drive/MyDrive/Image Processing project/Meme Classification/Dataset/Split Dataset/Validation_meme_dataset.csv")
-
-images = "/content/drive/MyDrive/Image Processing project/Meme Classification/Dataset/Processed Images" #path to the images folder.
+images = "Dataset/Processed Images" #path to the images folder.
 
 train_dataset = get_dataset(train, train_sequences, images)
 val_dataset = get_dataset(val, val_sequences, images, state='validation')

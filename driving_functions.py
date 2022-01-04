@@ -64,3 +64,25 @@ def validation_fn(validation_loader, model, loss_fn, epoch, device):
             final_outputs.extend(output)
     
     return final_loss, torch.tensor(final_targets), torch.tensor(final_outputs)
+
+def test_fn(test_loader, model, device):
+    model.eval()
+    stream = tqdm(test_loader)
+    final_targets = []
+    final_outputs = []
+    
+    with torch.no_grad():
+        for i, (image, text, target) in enumerate(stream, start=1):
+            image = image.to(device, non_blocking=True)
+            text = text.to(device, non_blocking=True)
+            target = target.to(device, non_blocking=True).float().view(-1, 1)
+    
+            output = model(image, text)
+            
+            target = (target.detach().cpu().numpy()).tolist()
+            output = (output.detach().cpu().numpy()).tolist()
+            
+            final_targets.extend(target)
+            final_outputs.extend(output)
+        
+    return final_targets, final_outputs
